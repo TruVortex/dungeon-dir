@@ -19,15 +19,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: dungeondir-linux
             nuitka_args: --output-filename=dungeondir
-            binary_path: dungeondir
+            binary_path: dist/dungeondir
           - os: macos-latest
             artifact_name: dungeondir-macos
             nuitka_args: --output-filename=dungeondir
-            binary_path: dungeondir
+            binary_path: dist/dungeondir
           - os: windows-latest
             artifact_name: dungeondir-windows
             nuitka_args: --output-filename=dungeondir.exe
-            binary_path: dungeondir.exe
+            binary_path: dist/dungeondir.exe
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -40,7 +40,42 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: Build Standalone Executable with Nuitka
-        run: uv run nuitka --onefile --remove-output ${{ matrix.nuitka_args }} main.py
+        run: |
+          uv run nuitka --onefile --remove-output --assume-yes-for-downloads ${{ matrix.nuitka_args }} main.py
+      - name: Locate and Prepare Binary
+        run: |
+          uv run python -c "
+          import os, shutil
+          from pathlib import Path
+          dist_dir = Path('dist')
+          dist_dir.mkdir(exist_ok=True)
+          found = None
+          for p in Path('.').rglob('*'):
+              if p.is_file():
+                  parts = [part.lower() for part in p.parts]
+                  if '.venv' in parts or 'build' in parts or p.suffix == '.py' or p.name.startswith('.'):
+                      continue
+                  name_lower = p.name.lower()
+                  if 'dungeondir' in name_lower or 'main' in name_lower:
+                      # Check for valid executable formats
+                      if p.suffix in ['.exe', '.bin'] or p.suffix == '':
+                          if '.build' not in name_lower and '.onefile-build' not in name_lower:
+                              found = p
+                              break
+          if found:
+              print(f'SUCCESS: Found compiled binary at: {found}')
+              target_name = 'dungeondir.exe' if os.name == 'nt' else 'dungeondir'
+              target_path = dist_dir / target_name
+              shutil.copy2(found, target_path)
+              print(f'Prepared artifact at: {target_path}')
+          else:
+              print('ERROR: Could not find the compiled binary anywhere in the workspace!')
+              print('Printing workspace file tree for diagnostics:')
+              for p in Path('.').rglob('*'):
+                  if p.is_file() and '.venv' not in p.parts:
+                      print(f'  Found File: {p}')
+              exit(1)
+          "
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
