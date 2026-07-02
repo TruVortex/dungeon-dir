@@ -19,15 +19,15 @@ jobs:
           - os: ubuntu-latest
             artifact_name: dungeondir-linux
             nuitka_args: --output-filename=dungeondir
-            binary_path: build/dungeondir
+            binary_path: dungeondir
           - os: macos-latest
             artifact_name: dungeondir-macos
             nuitka_args: --output-filename=dungeondir
-            binary_path: build/dungeondir
+            binary_path: dungeondir
           - os: windows-latest
             artifact_name: dungeondir-windows
             nuitka_args: --output-filename=dungeondir.exe
-            binary_path: build/dungeondir.exe
+            binary_path: dungeondir.exe
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: Build Standalone Executable with Nuitka
-        run: uv run nuitka --onefile --output-dir=build ${{ matrix.nuitka_args }} main.py
+        run: uv run nuitka --onefile --remove-output ${{ matrix.nuitka_args }} main.py
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
