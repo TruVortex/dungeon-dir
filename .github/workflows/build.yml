@@ -14,14 +14,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         include:
           - os: ubuntu-latest
             artifact_name: dungeondir-linux
+            binary_path: build/dungeondir
           - os: macos-latest
             artifact_name: dungeondir-macos
+            binary_path: build/dungeondir
           - os: windows-latest
             artifact_name: dungeondir-windows
+            binary_path: build/dungeondir.exe
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -34,13 +37,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: Build Standalone Executable with Nuitka
-        run: uv run nuitka --onefile --output-dir=build --output-filename=dungeondir main.py
+        run: uv run nuitka --onefile --output-dir=build --output-filename=dungeondir src/main.py
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: |
-            build/dungeondir.exe
-            build/dungeondir.bin
-            build/dungeondir
+          path: ${{ matrix.binary_path }}
           if-no-files-found: error
