@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
       - name: Build Standalone Executable with Nuitka
-        run: uv run nuitka --onefile --output-dir=build --output-filename=dungeondir src/main.py
+        run: uv run nuitka --onefile --output-dir=build --output-filename=dungeondir main.py
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
