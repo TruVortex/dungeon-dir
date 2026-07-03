@@ -2,6 +2,8 @@
 
 DungeonDir is a terminal-based, roguelike-inspired file explorer. It procedurally generates your local directory structures into dungeons complete with real-time sightlines. 
 
+https://github.com/user-attachments/assets/4ae611cb-8665-4984-8921-cf3b3651c1b5
+
 ## Quickstart
 Ensure Python 3.10+ and [`uv`](https://docs.astral.sh/uv/) are installed. Then, run the application:
 
