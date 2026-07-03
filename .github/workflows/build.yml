@@ -68,4 +68,5 @@ jobs:
             artifacts/dungeondir-macos/dungeondir-macos
             artifacts/dungeondir-windows/dungeondir-windows.exe
           tag_name: ${{ github.ref_name }}
+          name: DungeonDir ${{ github.ref_name }}
           generate_release_notes: true
