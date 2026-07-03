@@ -19,16 +19,16 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: dungeondir-linux
-            nuitka_args: --output-filename=dungeondir
-            binary_path: dungeondir
+            nuitka_args: --output-filename=dungeondir-linux
+            binary_path: dungeondir-linux
           - os: macos-latest
             artifact_name: dungeondir-macos
-            nuitka_args: --output-filename=dungeondir
-            binary_path: dungeondir
+            nuitka_args: --output-filename=dungeondir-macos
+            binary_path: dungeondir-macos
           - os: windows-latest
             artifact_name: dungeondir-windows
-            nuitka_args: --output-filename=dungeondir.exe
-            binary_path: dungeondir.exe
+            nuitka_args: --output-filename=dungeondir-windows.exe
+            binary_path: dungeondir-windows.exe
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -43,9 +43,29 @@ jobs:
       - name: Build Standalone Executable with Nuitka
         run: |
           uv run nuitka --onefile --remove-output --assume-yes-for-downloads ${{ matrix.nuitka_args }} main.py
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.binary_path }}
+          if-no-files-found: error
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
       - name: Upload Binaries to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.binary_path }}
+          files: |
+            artifacts/dungeondir-linux/dungeondir-linux
+            artifacts/dungeondir-macos/dungeondir-macos
+            artifacts/dungeondir-windows/dungeondir-windows.exe
           tag_name: ${{ github.ref_name }}
-          generate_release_notes: true # Automatically generates a clean changelog from your commit history
+          generate_release_notes: true
